@@ -6,9 +6,10 @@
 #20250908  新增自動更新按鈕
 #20251205  修改文字顯示，新增自動強制提權
 #20251229  修改UI，修改多項功能邏輯
+#20260203  新增說明按鈕
 # ==================================================================================
 
-$version = "修改日期:2025.12.29 使用問題及建議請聯繫:fia-aws@ch-si.com.tw"
+$version = "修改日期:2026.02.03 使用問題及建議請聯繫:fia-aws@ch-si.com.tw"
 
 # --- 自動強制提權 ---
 if (-not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
@@ -123,8 +124,13 @@ $btn11.Size = New-Object System.Drawing.Size($btnW, $btnH)
 $btn11.Location = New-Object System.Drawing.Point($L, $startY)
 $btn11.Add_Click({
     $statusLabel.Text = "正在執行報到指令..." ; [System.Windows.Forms.Application]::DoEvents()
-    Start-Process -FilePath "C:\Windows\System32\wuauclt.exe" -ArgumentList "/resetauthorization /detectnow"
-    Start-Process -FilePath "C:\Windows\System32\wuauclt.exe" -ArgumentList "/reportnow"
+    # 檢查是否存在 Sysnative (代表目前是在 32位元環境執行)
+    $path = if (Test-Path "$env:windir\Sysnative") { "$env:windir\Sysnative\wuauclt.exe" } 
+            else { "$env:windir\System32\wuauclt.exe" }
+
+    # 使用 Start-Process 執行，並加入 -Wait 確保指令完成
+    Start-Process -FilePath $path -ArgumentList "/resetauthorization /detectnow" -Wait
+    Start-Process -FilePath $path -ArgumentList "/reportnow" -Wait
     (get-service wuauserv).Refresh()
     (New-Object -ComObject Microsoft.Update.Autoupdate).detectNow()
     [System.Windows.Forms.MessageBox]::Show($form, "已重新向 WSUS 報到。", "完成", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)
@@ -586,22 +592,49 @@ $statusLabel.AutoSize = $true
 $statusLabel.Location = New-Object System.Drawing.Point(40, 660)
 $statusLabel.ForeColor = [System.Drawing.Color]::DarkBlue
 
-$btnRefresh = New-Object System.Windows.Forms.Button
-$btnRefresh.Text = "重新整理資訊"
-$btnRefresh.Size = New-Object System.Drawing.Size(130, 35)
-$btnRefresh.Location = New-Object System.Drawing.Point(40, 700)
-$btnRefresh.Add_Click({
-    Update-Information
-    $infoLabel.Text = "$version`n`n主機名稱: $env:computername`n本機 IP: $localIP`nWSUS Server: $wsusServer`nWSUS Client ID: $clientID`nNTP Server: $ntpServer"
+
+# --- 功能說明按鈕 ---
+$btnHelpMain = New-Object System.Windows.Forms.Button
+$btnHelpMain.Text = "功能說明 (Help)"
+$btnHelpMain.Size = New-Object System.Drawing.Size(130, 35)
+$btnHelpMain.Location = New-Object System.Drawing.Point(40, 700) # 原本重新整理的位置
+$btnHelpMain.Add_Click({
+    $helpText = @"
+=== WSUS / Windows Update 修復工具 功能說明 ===
+
+【左側：修復與重置】
+1. 重新向 WSUS 報到：強制觸發客戶端向伺服器傳送目前的更新狀態紀錄。
+2. 清除更新快取：停止服務並刪除 SoftwareDistribution 資料夾，解決下載卡住的問題。
+3. 完整重置修復：最深層的修復，包含重新註冊 36 個系統 DLL 組件。
+4. 設定自動更新：調整登錄檔參數 (AUOptions)，控制系統是否自動下載或重啟。
+5. 清除 Client ID：解決多台主機在 WSUS 後台「蓋台」消失的問題。
+
+【右側：診斷與工具】
+6. 設定 WSUS Server：手動指定內網更新伺服器 IP，或還原為微軟雲端更新。
+7. 檢查更新：直接開啟系統介面進行即時更新掃描。
+8. 更新紀錄：查看過去安裝成功的補丁清單。
+9. 同步系統時間：修正因「時間不同步」導致的更新驗證失敗 (0x80072F8F)。
+
+【底部：連線診斷】
+- 連線測試：若 Port 留白則執行 Ping (ICMP)；輸入 Port 則執行 TCP 通訊埠掃描。
+"@
+    [System.Windows.Forms.MessageBox]::Show($helpText, "功能手冊", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)
 })
 
+
+# 重新整理
+$btnRefresh = New-Object System.Windows.Forms.Button
+$btnRefresh.Text = "重新整理資訊"
+$btnRefresh.Size = New-Object System.Drawing.Size(120, 35)
+$btnRefresh.Location = New-Object System.Drawing.Point(180, 700)
+
+# 離開
 $btnExit = New-Object System.Windows.Forms.Button
 $btnExit.Text = "離開程式"
 $btnExit.Size = New-Object System.Drawing.Size(100, 35)
-$btnExit.Location = New-Object System.Drawing.Point(200, 700)
-$btnExit.Add_Click({ $form.Close() })
+$btnExit.Location = New-Object System.Drawing.Point(580, 700)
 
 # === 加載控制項 ===
-$form.Controls.AddRange(@($btn11, $btn12, $btn13, $btn14, $btn15, $btn21, $btn22, $btn23, $btn24,$btn25,$lineLabel, $lblTestIp, $txtTestIp, $lblTestPort, $txtTestPort, $btnRunTest, $statusLabel, $btnRefresh, $btnExit, $infoLabel))
+$form.Controls.AddRange(@($btn11, $btn12, $btn13, $btn14, $btn15, $btn21, $btn22, $btn23, $btn24,$btn25,$lineLabel, $lblTestIp, $txtTestIp, $lblTestPort, $txtTestPort, $btnRunTest, $statusLabel, $btnHelpMain, $btnRefresh, $btnExit, $infoLabel))
 
 $form.ShowDialog()
