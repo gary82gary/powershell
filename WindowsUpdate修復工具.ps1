@@ -9,7 +9,7 @@
 #20260203  新增說明按鈕
 # ==================================================================================
 
-$version = "修改日期:2026.02.03 使用問題及建議請聯繫:fia-aws@ch-si.com.tw"
+$version = "修改日期:2026.02.03 
 
 # --- 自動強制提權 ---
 if (-not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
@@ -636,5 +636,6 @@ $btnExit.Location = New-Object System.Drawing.Point(580, 700)
 
 # === 加載控制項 ===
 $form.Controls.AddRange(@($btn11, $btn12, $btn13, $btn14, $btn15, $btn21, $btn22, $btn23, $btn24,$btn25,$lineLabel, $lblTestIp, $txtTestIp, $lblTestPort, $txtTestPort, $btnRunTest, $statusLabel, $btnHelpMain, $btnRefresh, $btnExit, $infoLabel))
+
 
 $form.ShowDialog()
