@@ -9,7 +9,7 @@
 #20260203  新增說明按鈕
 # ==================================================================================
 
-$version = "修改日期:2026.02.03 
+$version = "修改日期:2026.02.03" 
 
 # --- 自動強制提權 ---
 if (-not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
