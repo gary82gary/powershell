@@ -1,4 +1,4 @@
-﻿# WSUS / Windows Update 修復工具
+# WSUS / Windows Update 修復工具
 #修改日期:
 #20250626  新增測試連線功能
 #20250725  美化顯示視窗
@@ -627,12 +627,15 @@ $btnRefresh = New-Object System.Windows.Forms.Button
 $btnRefresh.Text = "重新整理資訊"
 $btnRefresh.Size = New-Object System.Drawing.Size(120, 35)
 $btnRefresh.Location = New-Object System.Drawing.Point(180, 700)
+$btnRefresh.Add_Click({ Update-Information; $infoLabel.Text = "$version`n`nHostname: $env:computername`nLocal IP: $localIP`nWSUS Server: $wsusServer`nWSUS Client ID: $clientID`nNTP Server: $ntpServer" })
 
 # 離開
 $btnExit = New-Object System.Windows.Forms.Button
 $btnExit.Text = "離開程式"
 $btnExit.Size = New-Object System.Drawing.Size(100, 35)
 $btnExit.Location = New-Object System.Drawing.Point(580, 700)
+$btnExit.Add_Click({ $form.Close() })
+
 
 # === 加載控制項 ===
 $form.Controls.AddRange(@($btn11, $btn12, $btn13, $btn14, $btn15, $btn21, $btn22, $btn23, $btn24,$btn25,$lineLabel, $lblTestIp, $txtTestIp, $lblTestPort, $txtTestPort, $btnRunTest, $statusLabel, $btnHelpMain, $btnRefresh, $btnExit, $infoLabel))
