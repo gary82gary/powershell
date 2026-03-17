@@ -627,8 +627,10 @@ $btnRefresh = New-Object System.Windows.Forms.Button
 $btnRefresh.Text = "重新整理資訊"
 $btnRefresh.Size = New-Object System.Drawing.Size(120, 35)
 $btnRefresh.Location = New-Object System.Drawing.Point(180, 700)
-$btnRefresh.Add_Click({ Update-Information; $infoLabel.Text = "$version`n`nHostname: $env:computername`nLocal IP: $localIP`nWSUS Server: $wsusServer`nWSUS Client ID: $clientID`nNTP Server: $ntpServer" })
-
+$btnRefresh.Add_Click({
+    Update-Information
+    $infoLabel.Text = "$version`n`n主機名稱: $env:computername`n本機 IP: $localIP`nWSUS Server: $wsusServer`nWSUS Client ID: $clientID`nNTP Server: $ntpServer"
+})
 # 離開
 $btnExit = New-Object System.Windows.Forms.Button
 $btnExit.Text = "離開程式"
